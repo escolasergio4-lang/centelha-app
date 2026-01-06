@@ -15,7 +15,7 @@ const DISCIPLINAS = [
 
 // --- GROQ API CONFIG ---
 const MODEL_CONFIG = {
-    model: "llama-3.1-70b-versatile",
+    model: "llama-3.3-70b-versatile",
     temperature: 0.8,
     max_tokens: 1000
 };
