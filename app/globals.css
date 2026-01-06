@@ -1,26 +1,41 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f8fafc; /* Slate 50 (Gelo/Branco suave) */
+  color: #0f172a; /* Slate 900 (Preto suave) */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utilitário para inputs com foco moderno */
+.input-modern {
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0; /* Slate 200 */
+}
+.input-modern:focus {
+  border-color: #3b82f6; /* Azul moderno */
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); /* Aura azul suave */
+  outline: none;
+}
+
+/* Sombra suave e elegante para os cards */
+.shadow-soft {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Animação suave */
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
