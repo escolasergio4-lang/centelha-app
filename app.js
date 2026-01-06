@@ -54,7 +54,7 @@ const els = {
 
     resultType: document.getElementById('result-type'),
     resultTitle: document.getElementById('result-title'),
-    resultContent: document.getElementById('result-content'),
+    resultContent: document.getElementById('result-text'),
 
     btnReset: document.getElementById('btn-reset'),
     btnRetry: document.getElementById('btn-retry'),
