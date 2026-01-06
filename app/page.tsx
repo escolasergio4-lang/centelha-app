@@ -1,10 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sparkles, ArrowRight, RefreshCw, LayoutTemplate, BookOpen, GraduationCap, Settings, X, Save, Key } from 'lucide-react';
+import { 
+  Sparkles, 
+  ArrowRight, 
+  RefreshCw, 
+  LayoutTemplate, 
+  BookOpen, 
+  GraduationCap, 
+  Settings, 
+  X, 
+  Save, 
+  Key,
+  Download,
+  Menu,
+  CheckCircle2
+} from 'lucide-react';
 import { groqService, type CentelhaResponse } from '../lib/groq-service';
 
-// Tipagem para o evento de instalação PWA
+// --- TYPES & CONSTANTS ---
+
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
@@ -13,8 +28,6 @@ interface BeforeInstallPromptEvent extends Event {
   }>;
   prompt(): Promise<void>;
 }
-
-// --- TIPAGENS E CONSTANTES ---
 
 type NivelEnsino = 'fund1' | 'fund2' | 'medio' | 'eja';
 
@@ -32,10 +45,8 @@ const DISCIPLINAS = [
   "LPT (Leitura e Prod. Textual)", "Matemática", "Química", "Sociologia"
 ];
 
-
-
 export default function Home() {
-  // --- ESTADOS ---
+  // --- STATE ---
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CentelhaResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -43,22 +54,20 @@ export default function Home() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
   
-  // Estados do Formulário
+  // Form State
   const [topico, setTopico] = useState('');
   const [nivel, setNivel] = useState<NivelEnsino>('fund2');
   const [ano, setAno] = useState(ANOS_POR_NIVEL['fund2'][0]);
   const [disciplina, setDisciplina] = useState('');
 
-  // --- EFEITOS ---
+  // --- EFFECTS ---
 
-  // Carregar API Key salva e definir ano inicial correto
   useEffect(() => {
     const savedKey = localStorage.getItem('groq_api_key');
     if (savedKey) setApiKey(savedKey);
     setAno(ANOS_POR_NIVEL[nivel][0]);
   }, [nivel]);
 
-  // PWA Install Prompt
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -73,6 +82,8 @@ export default function Home() {
     };
   }, []);
 
+  // --- HANDLERS ---
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     
@@ -86,14 +97,11 @@ export default function Home() {
     setDeferredPrompt(null);
   };
 
-  // Função para salvar a chave
   const handleSaveKey = () => {
     localStorage.setItem('groq_api_key', apiKey);
     setShowModal(false);
-    alert("Chave salva com sucesso no navegador!");
   };
 
-  // --- INTEGRAÇÃO COM IA ---
   const handleGenerate = async () => {
     if (!apiKey) {
       setShowModal(true);
@@ -108,13 +116,9 @@ export default function Home() {
     setResult(null);
 
     try {
-      // Configurar a chave API no serviço
       groqService.setApiKey(apiKey);
-      
-      // Gerar centelha usando o serviço
       const result = await groqService.generateCentelha(topico, disciplina, ano, nivel);
       setResult(result);
-
     } catch (error) {
       console.error(error);
       alert("Erro ao gerar: Verifique sua chave API ou conexão.");
@@ -124,235 +128,298 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6 md:p-12 max-w-4xl mx-auto font-sans relative">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-700">
       
-      {/* BOTÃO DE INSTALAÇÃO PWA */}
-      {showInstallButton && (
-        <button 
-          onClick={handleInstallClick}
-          className="absolute top-6 left-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm z-40"
-          title="Instalar Aplicação"
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16a1 1 0 11-2 0V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z"/>
-          </svg>
-          Instalar App
-        </button>
-      )}
-
-      {/* BOTÃO DE CONFIGURAÇÃO (ENGRENAGEM) */}
-      <button 
-        onClick={() => setShowModal(true)}
-        className="fixed top-6 right-6 p-3 text-slate-400 hover:text-blue-600 transition-all hover:bg-white/50 rounded-xl z-30"
-        title="Configurar API Key"
-      >
-        <Settings className="w-6 h-6" />
-      </button>
-
-      {/* --- CABEÇALHO --- */}
-      <div className="w-full mb-12 text-center space-y-4 mt-8">
-        <div className="inline-flex items-center justify-center p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-3xl mb-4 text-white shadow-xl">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-blue-900 bg-clip-text text-transparent">
-          Centelha Pedagógica
-        </h1>
-        <p className="text-lg text-slate-600 max-w-md mx-auto">
-          O ponto de partida para aulas inesquecíveis e transformadoras.
-        </p>
-      </div>
-
-      {/* --- FORMULÁRIO --- */}
-      {!result && (
-        <div className="w-full bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-2xl border border-white/50 space-y-8 fade-in-up">
-          
-          <div className="space-y-3">
-            <label className="text-lg font-bold text-slate-800 flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <BookOpen className="w-5 h-5 text-blue-600" />
+      {/* --- NAVBAR --- */}
+      <nav className="sticky top-0 z-50 glass border-b border-slate-200/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-lg text-white shadow-md shadow-indigo-200">
+                <Sparkles className="w-5 h-5" />
               </div>
-              O que você quer ensinar?
-            </label>
-            <input 
-              type="text" 
-              value={topico}
-              onChange={(e) => setTopico(e.target.value)}
-              placeholder="Ex: Frações, Guerra Fria, Verbos, Fotossíntese..." 
-              className="w-full p-5 rounded-2xl text-xl bg-slate-50/50 border-2 border-slate-200 focus:border-blue-500 focus:bg-white transition-all placeholder:text-slate-400"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-3">
-              <label className="text-lg font-bold text-slate-800 flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <GraduationCap className="w-5 h-5 text-purple-600" />
-                </div>
-                Nível de Ensino
-              </label>
-              <select 
-                value={nivel}
-                onChange={(e) => setNivel(e.target.value as NivelEnsino)}
-                className="w-full p-4 rounded-2xl text-lg bg-slate-50/50 border-2 border-slate-200 focus:border-purple-500 focus:bg-white transition-all cursor-pointer text-slate-700"
-              >
-                <option value="fund1">Fundamental I</option>
-                <option value="fund2">Fundamental II</option>
-                <option value="medio">Ensino Médio</option>
-                <option value="eja">EJA</option>
-              </select>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-lg font-bold text-slate-800">Ano / Série</label>
-              <select 
-                value={ano}
-                onChange={(e) => setAno(e.target.value)}
-                className="w-full p-4 rounded-2xl text-lg bg-slate-50/50 border-2 border-slate-200 focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700"
-              >
-                {ANOS_POR_NIVEL[nivel].map((a) => (
-                  <option key={a} value={a}>{a}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-lg font-bold text-slate-800">Disciplina</label>
-              <select 
-                value={disciplina}
-                onChange={(e) => setDisciplina(e.target.value)}
-                className="w-full p-4 rounded-2xl text-lg bg-slate-50/50 border-2 border-slate-200 focus:border-green-500 focus:bg-white transition-all cursor-pointer text-slate-700"
-              >
-                <option value="" disabled>Selecione...</option>
-                {DISCIPLINAS.map((disc) => (
-                  <option key={disc} value={disc}>{disc}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <button 
-            onClick={handleGenerate}
-            disabled={loading}
-            className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-5 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 text-xl disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-7 h-7 animate-spin" />
-                Gerando Centelha...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-7 h-7" /> Acender Centelha
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* --- RESULTADO --- */}
-      {result && (
-        <div className="w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 overflow-hidden fade-in-up relative">
-          
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
-             <span className="relative z-10 inline-block px-4 py-2 bg-white/20 backdrop-blur-md text-sm font-bold uppercase tracking-wider rounded-2xl border border-white/30">
-                {result.tipo}
+              <span className="font-bold text-lg tracking-tight text-slate-900">
+                Centelha<span className="text-indigo-600">.ai</span>
               </span>
-            <h2 className="relative z-10 text-3xl md:text-4xl font-bold mt-4 leading-tight">{result.titulo}</h2>
-          </div>
+            </div>
 
-          <div className="p-8 md:p-10">
-            <div className="mb-10 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-l-4 border-blue-500">
-              <p className="text-slate-700 text-xl leading-relaxed font-medium">
-                <span className="text-blue-600 font-bold text-2xl">✨ Que tal... </span>
-                {result.centelha.replace(/Que tal\.{3}|Que tal/i, "").trim()}
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {showInstallButton && (
+                <button 
+                  onClick={handleInstallClick}
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-sm font-medium transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Instalar App
+                </button>
+              )}
+              
+              <button 
+                onClick={() => setShowModal(true)}
+                className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100/50 rounded-full transition-all"
+                title="Configurações"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* --- MAIN CONTENT --- */}
+      <main className="flex-grow flex flex-col items-center justify-start pt-8 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+        
+        {/* Header Section */}
+        <div className="text-center max-w-2xl mx-auto mb-12 animate-in">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-4 text-balance">
+            Planeje aulas <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">inesquecíveis</span>
+          </h1>
+          <p className="text-lg text-slate-600 text-balance leading-relaxed">
+            Dê o primeiro passo para transformar sua sala de aula. Gere ideias criativas e alinhadas ao currículo em segundos.
+          </p>
+          
+          {/* Mobile Install Button (Visible only on small screens if standard button is generic) */}
+          {showInstallButton && (
+            <button 
+              onClick={handleInstallClick}
+              className="mt-6 md:hidden inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-semibold hover:bg-indigo-100 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Instalar App
+            </button>
+          )}
+        </div>
+
+        {/* --- FORM SECTION --- */}
+        {!result && (
+          <div className="w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-8 animate-slide-up">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              
+              {/* Topic Input - Full Width on Mobile, Left Col on Desktop */}
+              <div className="md:col-span-2 space-y-4">
+                <label className="block text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  O que vamos ensinar hoje?
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <BookOpen className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    value={topico}
+                    onChange={(e) => setTopico(e.target.value)}
+                    className="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all text-lg"
+                    placeholder="Ex: Revolução Industrial, Frações, Verbo To Be..."
+                  />
+                </div>
+              </div>
+
+              {/* Selects Grid */}
+              <div className="space-y-4">
+                <label className="block text-sm font-semibold text-slate-700">Nível & Ano</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative">
+                    <select
+                      value={nivel}
+                      onChange={(e) => setNivel(e.target.value as NivelEnsino)}
+                      className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all cursor-pointer"
+                    >
+                      <option value="fund1">Fund. I</option>
+                      <option value="fund2">Fund. II</option>
+                      <option value="medio">Ensino Médio</option>
+                      <option value="eja">EJA</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <select
+                      value={ano}
+                      onChange={(e) => setAno(e.target.value)}
+                      className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all cursor-pointer"
+                    >
+                      {ANOS_POR_NIVEL[nivel].map((a) => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-sm font-semibold text-slate-700">Disciplina</label>
+                <div className="relative">
+                  <select
+                    value={disciplina}
+                    onChange={(e) => setDisciplina(e.target.value)}
+                    className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all cursor-pointer"
+                  >
+                    <option value="" disabled>Selecione a disciplina...</option>
+                    {DISCIPLINAS.map((disc) => (
+                      <option key={disc} value={disc}>{disc}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-100">
+              <button
+                onClick={handleGenerate}
+                disabled={loading}
+                className="w-full group relative flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Gerando Ideias Fabulosas...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
+                    Acender Centelha Criativa
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* --- RESULT SECTION --- */}
+        {result && (
+          <div className="w-full animate-slide-up space-y-6">
+            
+            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl shadow-indigo-100/50 border border-slate-100 ring-1 ring-slate-200/50">
+              {/* Card Header */}
+              <div className="bg-slate-50 border-b border-slate-100 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 uppercase tracking-wide">
+                      {result.tipo}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-800 leading-tight">
+                    {result.titulo}
+                  </h2>
+                </div>
+                <div className="flex-shrink-0">
+                  <button 
+                    onClick={() => setResult(null)}
+                    className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                  >
+                   <RefreshCw className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Card Content */}
+              <div className="p-6 md:p-10">
+                <div className="prose prose-indigo max-w-none">
+                  <p className="text-lg text-slate-600 leading-relaxed whitespace-pre-line">
+                    {result.centelha.replace(/Que tal\.{3}|Que tal/i, "").trim()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card Footer Actions */}
+              <div className="bg-slate-50 border-t border-slate-100 p-4 md:p-6 flex flex-col sm:flex-row gap-4 justify-end">
+                 <button 
+                  onClick={() => setResult(null)}
+                  className="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-white hover:border-indigo-200 hover:text-indigo-600 transition-all"
+                >
+                  Tentar Outra Ideia
+                </button>
+                <a 
+                  href="https://escolasergio4-lang.github.io/planejadorai/" 
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <LayoutTemplate className="w-5 h-5" />
+                  Criar Plano Completo
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* --- FOOTER --- */}
+      <footer className="py-8 text-center border-t border-slate-200 mt-auto bg-white/50 backdrop-blur-sm">
+        <p className="text-slate-500 font-medium">Escola Sérgio • Apoio Docente</p>
+        <p className="text-slate-400 text-sm mt-1">Desenvolvido para inspirar o futuro.</p>
+      </footer>
+
+      {/* --- MODAL (API KEY) --- */}
+      {showModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6 md:p-8 relative">
+            
+            <button 
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-6">
+              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4 text-indigo-600">
+                <Key className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Configurar Acesso</h3>
+              <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+                Para utilizar a inteligência artificial, você precisa de uma chave API da Groq. Ela será salva apenas no seu navegador.
               </p>
             </div>
 
-            <div className="flex flex-col gap-4">
-              {/* LINK EXTERNO PARA O PLANEJADOR */}
-              <a 
-                href="https://escolasergio4-lang.github.io/planejadorai/" 
-                target="_blank"
-                rel="noreferrer"
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-5 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 group text-xl"
-              >
-                <LayoutTemplate className="w-6 h-6" /> 
-                Criar Plano Completo
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-              </a>
-              
-              <button 
-                onClick={() => setResult(null)}
-                className="w-full py-4 text-slate-600 font-semibold hover:text-blue-600 transition-colors flex items-center justify-center gap-3 text-lg border-2 border-slate-200 hover:border-blue-300 rounded-2xl"
-              >
-                <RefreshCw className="w-5 h-5" />
-                Gerar Outra Ideia
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODAL DE CONFIGURAÇÃO (API KEY) --- */}
-      {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-md">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-white/50 relative">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Key className="w-6 h-6 text-blue-600" />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Chave API (Groq)
+                </label>
+                <div className="relative">
+                   <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-mono text-sm"
+                    placeholder="gsk_..."
+                  />
                 </div>
-                Configurar IA
-              </h3>
-              <button 
-                onClick={() => setShowModal(false)} 
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                <p className="text-slate-700 leading-relaxed">
-                  Para usar a Centelha, insira sua chave da API Groq. Ela ficará salva apenas no seu navegador de forma segura.
-                </p>
               </div>
               
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">Sua Chave API Groq</label>
-                <input 
-                  type="password" 
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="gsk_your_api_key_here..." 
-                  className="w-full p-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 outline-none text-slate-800 font-mono text-lg bg-slate-50/50 focus:bg-white transition-all"
-                />
-                <p className="text-xs text-slate-500">
-                  Obtenha sua chave em <a href="https://console.groq.com" target="_blank" rel="noopener" className="text-blue-600 hover:underline">console.groq.com</a>
-                </p>
+              <div className="text-xs text-slate-500 flex justify-between items-center">
+                <span>Não tem uma chave?</span>
+                <a href="https://console.groq.com" target="_blank" rel="noopener" className="text-indigo-600 hover:underline font-medium">
+                  Gerar chave grátis
+                </a>
               </div>
 
-              <div className="pt-4">
-                <button 
-                  onClick={handleSaveKey}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 text-lg"
-                >
-                  <Save className="w-5 h-5" /> Salvar Chave
-                </button>
-              </div>
+              <button
+                onClick={handleSaveKey}
+                className="w-full mt-2 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Salvar Configuração
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      <footer className="mt-16 text-center text-slate-500 text-sm">
-        <p>© 2026 Escola Sérgio • Apoio Docente</p>
-        <p className="mt-2 text-xs text-slate-400">Desenvolvido com ❤️ para educadores</p>
-      </footer>
-
-    </main>
+    </div>
   );
 }
