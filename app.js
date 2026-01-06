@@ -35,7 +35,9 @@ Regra de Ouro (A Sutileza): A ideia deve, sutilmente, conectar o conteúdo técn
 // --- STATE ---
 let state = {
     apiKey: localStorage.getItem('groq_api_key') || '',
-    deferredPrompt: null
+    deferredPrompt: null,
+    isIos: /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
+    isStandalone: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
 };
 
 // --- DOM ELEMENTS ---
@@ -66,7 +68,9 @@ const els = {
     btnSaveKey: document.getElementById('btn-save-key'),
 
     btnInstall: document.getElementById('btn-install'),
-    btnInstallMobile: document.getElementById('btn-install-mobile')
+    btnInstallMobile: document.getElementById('btn-install-mobile'),
+    modalIos: document.getElementById('modal-ios-install'),
+    btnCloseIos: document.getElementById('btn-close-ios')
 };
 
 // --- INITIALIZATION ---
@@ -97,6 +101,20 @@ function init() {
     els.modalConfig.addEventListener('click', (e) => {
         if (e.target === els.modalConfig) toggleModal(false);
     });
+
+    els.btnCloseIos.addEventListener('click', () => {
+        els.modalIos.classList.add('hidden');
+    });
+
+    els.modalIos.addEventListener('click', (e) => {
+        if (e.target === els.modalIos) els.modalIos.classList.add('hidden');
+    });
+
+    // Show Install Button on iOS
+    if (state.isIos && !state.isStandalone) {
+        els.btnInstall.style.display = 'flex';
+        els.btnInstallMobile.style.display = 'inline-flex';
+    }
 
     // PWA Install Event
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -247,17 +265,18 @@ function setLoading(isLoading) {
 }
 
 async function installPwa() {
-    if (!state.deferredPrompt) return;
+    if (state.deferredPrompt) {
+        state.deferredPrompt.prompt();
+        const { outcome } = await state.deferredPrompt.userChoice;
 
-    state.deferredPrompt.prompt();
-    const { outcome } = await state.deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-        els.btnInstall.style.display = 'none';
-        els.btnInstallMobile.style.display = 'none';
+        if (outcome === 'accepted') {
+            state.deferredPrompt = null;
+            els.btnInstall.style.display = 'none';
+            els.btnInstallMobile.style.display = 'none';
+        }
+    } else if (state.isIos) {
+        els.modalIos.classList.remove('hidden');
     }
-
-    state.deferredPrompt = null;
 }
 
 // --- RUN ---
