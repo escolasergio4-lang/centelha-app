@@ -4,6 +4,16 @@ import { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, RefreshCw, LayoutTemplate, BookOpen, GraduationCap, Settings, X, Save, Key } from 'lucide-react';
 import { groqService, type CentelhaResponse } from '../lib/groq-service';
 
+// Tipagem para o evento de instalação PWA
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 // --- TIPAGENS E CONSTANTES ---
 
 type NivelEnsino = 'fund1' | 'fund2' | 'medio' | 'eja';
@@ -30,6 +40,8 @@ export default function Home() {
   const [result, setResult] = useState<CentelhaResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
   
   // Estados do Formulário
   const [topico, setTopico] = useState('');
@@ -45,6 +57,34 @@ export default function Home() {
     if (savedKey) setApiKey(savedKey);
     setAno(ANOS_POR_NIVEL[nivel][0]);
   }, [nivel]);
+
+  // PWA Install Prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setShowInstallButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setShowInstallButton(false);
+    }
+    
+    setDeferredPrompt(null);
+  };
 
   // Função para salvar a chave
   const handleSaveKey = () => {
@@ -86,10 +126,24 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6 md:p-12 max-w-4xl mx-auto font-sans relative">
       
+      {/* BOTÃO DE INSTALAÇÃO PWA */}
+      {showInstallButton && (
+        <button 
+          onClick={handleInstallClick}
+          className="absolute top-6 left-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm z-40"
+          title="Instalar Aplicação"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16a1 1 0 11-2 0V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z"/>
+          </svg>
+          Instalar App
+        </button>
+      )}
+
       {/* BOTÃO DE CONFIGURAÇÃO (ENGRENAGEM) */}
       <button 
         onClick={() => setShowModal(true)}
-        className="absolute top-6 right-6 p-3 text-slate-400 hover:text-blue-600 transition-all hover:bg-white/50 rounded-xl"
+        className="fixed top-6 right-6 p-3 text-slate-400 hover:text-blue-600 transition-all hover:bg-white/50 rounded-xl z-30"
         title="Configurar API Key"
       >
         <Settings className="w-6 h-6" />
@@ -243,8 +297,8 @@ export default function Home() {
 
       {/* --- MODAL DE CONFIGURAÇÃO (API KEY) --- */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-md">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-white/50">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-md">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-white/50 relative">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
