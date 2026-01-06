@@ -84,72 +84,76 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 max-w-2xl mx-auto font-sans relative">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6 md:p-12 max-w-4xl mx-auto font-sans relative">
       
       {/* BOTÃO DE CONFIGURAÇÃO (ENGRENAGEM) */}
       <button 
         onClick={() => setShowModal(true)}
-        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-blue-600 transition-colors"
+        className="absolute top-6 right-6 p-3 text-slate-400 hover:text-blue-600 transition-all hover:bg-white/50 rounded-xl"
         title="Configurar API Key"
       >
         <Settings className="w-6 h-6" />
       </button>
 
       {/* --- CABEÇALHO --- */}
-      <div className="w-full mb-8 text-center space-y-3 mt-8">
-        <div className="inline-flex items-center justify-center p-3 bg-blue-50 rounded-2xl mb-2 text-blue-600 shadow-sm">
-          <Sparkles className="w-6 h-6" />
+      <div className="w-full mb-12 text-center space-y-4 mt-8">
+        <div className="inline-flex items-center justify-center p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-3xl mb-4 text-white shadow-xl">
+          <Sparkles className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-blue-900 bg-clip-text text-transparent">
           Centelha Pedagógica
         </h1>
-        <p className="text-slate-500">
-          O ponto de partida para aulas inesquecíveis.
+        <p className="text-lg text-slate-600 max-w-md mx-auto">
+          O ponto de partida para aulas inesquecíveis e transformadoras.
         </p>
       </div>
 
       {/* --- FORMULÁRIO --- */}
       {!result && (
-        <div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-soft border border-slate-100 space-y-6 fade-in-up">
+        <div className="w-full bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-2xl border border-white/50 space-y-8 fade-in-up">
           
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-blue-500" />
+          <div className="space-y-3">
+            <label className="text-lg font-bold text-slate-800 flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <BookOpen className="w-5 h-5 text-blue-600" />
+              </div>
               O que você quer ensinar?
             </label>
             <input 
               type="text" 
               value={topico}
               onChange={(e) => setTopico(e.target.value)}
-              placeholder="Ex: Frações, Guerra Fria, Verbos..." 
-              className="w-full p-4 rounded-xl text-lg bg-slate-50 input-modern placeholder:text-slate-400"
+              placeholder="Ex: Frações, Guerra Fria, Verbos, Fotossíntese..." 
+              className="w-full p-5 rounded-2xl text-xl bg-slate-50/50 border-2 border-slate-200 focus:border-blue-500 focus:bg-white transition-all placeholder:text-slate-400"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-blue-500" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-3">
+              <label className="text-lg font-bold text-slate-800 flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <GraduationCap className="w-5 h-5 text-purple-600" />
+                </div>
                 Nível de Ensino
               </label>
               <select 
                 value={nivel}
                 onChange={(e) => setNivel(e.target.value as NivelEnsino)}
-                className="w-full p-3 rounded-xl bg-slate-50 input-modern cursor-pointer text-slate-700"
+                className="w-full p-4 rounded-2xl text-lg bg-slate-50/50 border-2 border-slate-200 focus:border-purple-500 focus:bg-white transition-all cursor-pointer text-slate-700"
               >
-                <option value="fund1">Fundamental I (1º ao 5º)</option>
-                <option value="fund2">Fundamental II (6º ao 9º)</option>
+                <option value="fund1">Fundamental I</option>
+                <option value="fund2">Fundamental II</option>
                 <option value="medio">Ensino Médio</option>
                 <option value="eja">EJA</option>
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Ano / Série</label>
+            <div className="space-y-3">
+              <label className="text-lg font-bold text-slate-800">Ano / Série</label>
               <select 
                 value={ano}
                 onChange={(e) => setAno(e.target.value)}
-                className="w-full p-3 rounded-xl bg-slate-50 input-modern cursor-pointer text-slate-700"
+                className="w-full p-4 rounded-2xl text-lg bg-slate-50/50 border-2 border-slate-200 focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700"
               >
                 {ANOS_POR_NIVEL[nivel].map((a) => (
                   <option key={a} value={a}>{a}</option>
@@ -157,15 +161,14 @@ export default function Home() {
               </select>
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold text-slate-700">Disciplina</label>
-              {/* CORREÇÃO DA LINHA 136: Select controlado por value */}
+            <div className="space-y-3">
+              <label className="text-lg font-bold text-slate-800">Disciplina</label>
               <select 
                 value={disciplina}
                 onChange={(e) => setDisciplina(e.target.value)}
-                className="w-full p-3 rounded-xl bg-slate-50 input-modern cursor-pointer text-slate-700"
+                className="w-full p-4 rounded-2xl text-lg bg-slate-50/50 border-2 border-slate-200 focus:border-green-500 focus:bg-white transition-all cursor-pointer text-slate-700"
               >
-                <option value="" disabled>Selecione a matéria...</option>
+                <option value="" disabled>Selecione...</option>
                 {DISCIPLINAS.map((disc) => (
                   <option key={disc} value={disc}>{disc}</option>
                 ))}
@@ -176,13 +179,16 @@ export default function Home() {
           <button 
             onClick={handleGenerate}
             disabled={loading}
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-5 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 text-xl disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <RefreshCw className="w-6 h-6 animate-spin" />
+              <>
+                <RefreshCw className="w-7 h-7 animate-spin" />
+                Gerando Centelha...
+              </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5" /> Acender Centelha
+                <Sparkles className="w-7 h-7" /> Acender Centelha
               </>
             )}
           </button>
@@ -191,42 +197,43 @@ export default function Home() {
 
       {/* --- RESULTADO --- */}
       {result && (
-        <div className="w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden fade-in-up relative">
+        <div className="w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 overflow-hidden fade-in-up relative">
           
-          <div className="bg-blue-600 p-6 text-white relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-             <span className="relative z-10 px-3 py-1 bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider rounded-lg border border-white/30">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+             <span className="relative z-10 inline-block px-4 py-2 bg-white/20 backdrop-blur-md text-sm font-bold uppercase tracking-wider rounded-2xl border border-white/30">
                 {result.tipo}
               </span>
-            <h2 className="relative z-10 text-2xl font-bold mt-3 leading-tight">{result.titulo}</h2>
+            <h2 className="relative z-10 text-3xl md:text-4xl font-bold mt-4 leading-tight">{result.titulo}</h2>
           </div>
 
-          <div className="p-8">
-            <div className="mb-8 p-4 bg-blue-50/50 rounded-xl border-l-4 border-blue-500">
-              <p className="text-slate-700 text-lg leading-relaxed font-medium">
-                <span className="text-blue-600 font-bold text-xl">Que tal... </span>
+          <div className="p-8 md:p-10">
+            <div className="mb-10 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-l-4 border-blue-500">
+              <p className="text-slate-700 text-xl leading-relaxed font-medium">
+                <span className="text-blue-600 font-bold text-2xl">✨ Que tal... </span>
                 {result.centelha.replace(/Que tal\.{3}|Que tal/i, "").trim()}
               </p>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {/* LINK EXTERNO PARA O PLANEJADOR */}
               <a 
                 href="https://escolasergio4-lang.github.io/planejadorai/" 
                 target="_blank"
                 rel="noreferrer"
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2 group text-lg"
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-5 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 group text-xl"
               >
-                <LayoutTemplate className="w-5 h-5" /> 
+                <LayoutTemplate className="w-6 h-6" /> 
                 Criar Plano Completo
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </a>
               
               <button 
                 onClick={() => setResult(null)}
-                className="w-full py-3 text-slate-500 font-semibold hover:text-blue-600 transition-colors flex items-center justify-center gap-2 text-sm"
+                className="w-full py-4 text-slate-600 font-semibold hover:text-blue-600 transition-colors flex items-center justify-center gap-3 text-lg border-2 border-slate-200 hover:border-blue-300 rounded-2xl"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-5 h-5" />
                 Gerar Outra Ideia
               </button>
             </div>
@@ -236,39 +243,50 @@ export default function Home() {
 
       {/* --- MODAL DE CONFIGURAÇÃO (API KEY) --- */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Key className="w-5 h-5 text-blue-500" /> Configurar IA
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-md">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-white/50">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Key className="w-6 h-6 text-blue-600" />
+                </div>
+                Configurar IA
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button 
+                onClick={() => setShowModal(false)} 
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+              >
                 <X className="w-6 h-6" />
               </button>
             </div>
             
-            <div className="space-y-4">
-              <p className="text-sm text-slate-500">
-                Para usar a Centelha, insira sua chave da Groq (IA). Ela ficará salva apenas no seu dispositivo.
-              </p>
+            <div className="space-y-6">
+              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <p className="text-slate-700 leading-relaxed">
+                  Para usar a Centelha, insira sua chave da API Groq. Ela ficará salva apenas no seu navegador de forma segura.
+                </p>
+              </div>
               
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase">API Key (Groq)</label>
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">Sua Chave API Groq</label>
                 <input 
                   type="password" 
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="sk-..." 
-                  className="w-full p-3 rounded-lg border border-slate-300 focus:border-blue-500 outline-none text-slate-800 font-mono text-sm"
+                  placeholder="gsk_your_api_key_here..." 
+                  className="w-full p-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 outline-none text-slate-800 font-mono text-lg bg-slate-50/50 focus:bg-white transition-all"
                 />
+                <p className="text-xs text-slate-500">
+                  Obtenha sua chave em <a href="https://console.groq.com" target="_blank" rel="noopener" className="text-blue-600 hover:underline">console.groq.com</a>
+                </p>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-4">
                 <button 
                   onClick={handleSaveKey}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 text-lg"
                 >
-                  <Save className="w-4 h-4" /> Salvar Chave
+                  <Save className="w-5 h-5" /> Salvar Chave
                 </button>
               </div>
             </div>
@@ -276,8 +294,9 @@ export default function Home() {
         </div>
       )}
 
-      <footer className="mt-12 text-center text-slate-400 text-sm">
+      <footer className="mt-16 text-center text-slate-500 text-sm">
         <p>© 2026 Escola Sérgio • Apoio Docente</p>
+        <p className="mt-2 text-xs text-slate-400">Desenvolvido com ❤️ para educadores</p>
       </footer>
 
     </main>
