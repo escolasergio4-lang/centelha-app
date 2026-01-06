@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, RefreshCw, LayoutTemplate, BookOpen, GraduationCap, Settings, X, Save, Key } from 'lucide-react';
+import { groqService, type CentelhaResponse } from '../lib/groq-service';
 
 // --- TIPAGENS E CONSTANTES ---
 
@@ -21,12 +22,7 @@ const DISCIPLINAS = [
   "LPT (Leitura e Prod. Textual)", "Matemática", "Química", "Sociologia"
 ];
 
-// Interface da resposta da IA
-interface CentelhaResponse {
-  titulo: string;
-  tipo: string;
-  centelha: string;
-}
+
 
 export default function Home() {
   // --- ESTADOS ---
@@ -45,14 +41,14 @@ export default function Home() {
 
   // Carregar API Key salva e definir ano inicial correto
   useEffect(() => {
-    const savedKey = localStorage.getItem('openai_api_key');
+    const savedKey = localStorage.getItem('groq_api_key');
     if (savedKey) setApiKey(savedKey);
     setAno(ANOS_POR_NIVEL[nivel][0]);
   }, [nivel]);
 
   // Função para salvar a chave
   const handleSaveKey = () => {
-    localStorage.setItem('openai_api_key', apiKey);
+    localStorage.setItem('groq_api_key', apiKey);
     setShowModal(false);
     alert("Chave salva com sucesso no navegador!");
   };
@@ -71,37 +67,13 @@ export default function Home() {
     setLoading(true);
     setResult(null);
 
-    // Prompt do Sistema (O Cérebro Crítico/Sutil)
-    const systemPrompt = `Você é um assistente pedagógico criativo e sutilmente crítico. 
-    Gere um JSON com 3 campos: 'titulo' (curto), 'tipo' (Aula, Projeto, Oficina) e 'centelha' (máx 40 palavras).
-    A 'centelha' deve começar OBRIGATORIAMENTE com 'Que tal...' e conectar o tema à realidade social/material do aluno de forma instigante.`;
-
-    const userPrompt = `Tema: ${topico}. Disciplina: ${disciplina}. Público: ${ano} (${nivel}).`;
-
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo", // Ou gpt-4o-mini se preferir
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          response_format: { type: "json_object" }, // Garante JSON
-          temperature: 0.8
-        })
-      });
-
-      const data = await response.json();
+      // Configurar a chave API no serviço
+      groqService.setApiKey(apiKey);
       
-      if (data.error) throw new Error(data.error.message);
-      
-      const content = JSON.parse(data.choices[0].message.content);
-      setResult(content);
+      // Gerar centelha usando o serviço
+      const result = await groqService.generateCentelha(topico, disciplina, ano, nivel);
+      setResult(result);
 
     } catch (error) {
       console.error(error);
@@ -277,11 +249,11 @@ export default function Home() {
             
             <div className="space-y-4">
               <p className="text-sm text-slate-500">
-                Para usar a Centelha, insira sua chave da OpenAI (GPT). Ela ficará salva apenas no seu dispositivo.
+                Para usar a Centelha, insira sua chave da Groq (IA). Ela ficará salva apenas no seu dispositivo.
               </p>
               
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase">API Key (OpenAI)</label>
+                <label className="text-xs font-bold text-slate-700 uppercase">API Key (Groq)</label>
                 <input 
                   type="password" 
                   value={apiKey}
